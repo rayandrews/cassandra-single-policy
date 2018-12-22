@@ -73,9 +73,7 @@ public class App {
 
     BatchStatement batchInsert = new BatchStatement();
 
-    int i = 0;
-
-    for (i = 0; i <= 400; i++) {
+    for (int i = 0; i <= 400; i++) {
       batchInsert.add(app.preparedInsert(session, "raydreww" + i + "@gmail.com", "Ray", "Andrew"));
     }
 
@@ -83,7 +81,7 @@ public class App {
 
     batchInsert.clear();
 
-    for (i = 0; i <= 400; i++) {
+    for (int i = 0; i <= 400; i++) {
       batchInsert.add(app.preparedInsert(session, "raydreww" + i + "@gmail.com", "Ray", "Andrew"));
     }
 
@@ -91,7 +89,7 @@ public class App {
 
     batchInsert.clear();
 
-    for (i = 0; i <= 400; i++) {
+    for (int i = 0; i <= 400; i++) {
       batchInsert.add(app.preparedInsert(session, "raydreww" + i + "@gmail.com", "Ray", "Andrew"));
     }
 
@@ -99,7 +97,7 @@ public class App {
 
     batchInsert.clear();
 
-    for (i = 0; i <= 400; i++) {
+    for (int i = 0; i <= 400; i++) {
       batchInsert.add(app.preparedInsert(session, "raydreww" + i + "@gmail.com", "Ray", "Andrew"));
     }
 
