@@ -12,6 +12,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.UUID;
@@ -25,13 +26,13 @@ public class App {
   static private Session session = null;
 
   public Session connect() {
-    System.out.println("Try to connect to : " + dotenv.get("CASSANDRA_NODES"));
+    String[] hosts = dotenv.get("CASSANDRA_NODES").replace("\"", "").split(",");
+    System.out.println("Trying to connect to : " + Arrays.toString(hosts));
+
     if (session == null) {
-      cluster = Cluster.builder().addContactPoints(dotenv.get("CASSANDRA_NODES").split(","))
-          .withLoadBalancingPolicy(new SingleNodePolicy()).build();
+      cluster = Cluster.builder().addContactPoints(hosts).withLoadBalancingPolicy(new SingleNodePolicy()).build();
 
-      System.out.println("Connected to these hosts : ");
-
+      System.out.println("Connected to these host(s) : ");
       for (Host host : cluster.getMetadata().getAllHosts()) {
         System.out.printf("Address: %s, Rack: %s, Datacenter: %s \n", host.getAddress(), host.getDatacenter(),
             host.getRack());
@@ -104,25 +105,37 @@ public class App {
 
     ResultSet resultInsertFourth = session.execute(batchInsert);
 
-    ResultSet resultSelect = session.execute(app.selectAllUsers(session));
+    System.out.println("Insert first tried host : " + resultInsertFirst.getExecutionInfo().getTriedHosts());
+    System.out.println("Insert second tried host : " + resultInsertSecond.getExecutionInfo().getTriedHosts());
+    System.out.println("Insert third tried host : " + resultInsertThird.getExecutionInfo().getTriedHosts());
+    System.out.println("Insert fourth tried host : " + resultInsertFourth.getExecutionInfo().getTriedHosts());
 
-    int countRow = 0;
+    System.out.println("Time to do stress testing");
 
-    Iterator<Row> resultIterator = resultSelect.iterator();
-    while (resultSelect.iterator().hasNext()) {
-      countRow++;
-      resultIterator.next();
+    for (int i = 0; i <= 1000; i++) {
+      System.out.println("Request no " + i);
+
+      ResultSet resultSelect = session.execute(app.selectAllUsers(session));
+      ResultSet resultSelectSecond = session.execute(app.selectAllUsers(session));
+      ResultSet resultSelectThird = session.execute(app.selectAllUsers(session));
+
+      // int countRow = 0;
+
+      // Iterator<Row> resultIterator = resultSelect.iterator();
+      // while (resultSelect.iterator().hasNext()) {
+      // countRow++;
+      // resultIterator.next();
       // System.out.printf("%s %s %s %s\n", row.getUUID("user_id"),
       // row.getString("email"), row.getString("first_name"),
       // row.getString("last_name"));
-    }
+      // }
 
-    System.out.println("Insert first tried host  : " + resultInsertFirst.getExecutionInfo().getTriedHosts());
-    System.out.println("Insert second tried host : " + resultInsertSecond.getExecutionInfo().getTriedHosts());
-    System.out.println("Insert third tried host  : " + resultInsertThird.getExecutionInfo().getTriedHosts());
-    System.out.println("Insert fourth tried host : " + resultInsertFourth.getExecutionInfo().getTriedHosts());
-    System.out.println("Select tried host        : " + resultSelect.getExecutionInfo().getQueriedHost());
-    System.out.println("Row inserted             : " + countRow);
+      System.out.println("Select First tried host  : " + resultSelect.getExecutionInfo().getQueriedHost());
+      System.out.println("Select Second tried host : " + resultSelectSecond.getExecutionInfo().getQueriedHost());
+      System.out.println("Select Third tried host  : " + resultSelectThird.getExecutionInfo().getQueriedHost());
+
+      // System.out.println("Row inserted : " + countRow);
+    }
 
     session.close();
     cluster.close();
